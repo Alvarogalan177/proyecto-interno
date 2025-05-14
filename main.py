@@ -42,7 +42,8 @@ seccion = st.sidebar.radio("Selecciona una sección", [
     "Resumen General",
     "Top Ciudades",
     "Retrasos en Entregas",
-    "Top Categorías Vendidas"
+    "Top Categorías Vendidas",
+    "Reviews"
 ])
 
 min_fecha = df['order_purchase_timestamp'].min().date()
@@ -177,7 +178,7 @@ elif seccion == "Top Categorías Vendidas":
     st.subheader("📦 Top de Categorías de Producto Más Vendidas")
 
     # Agrupar por categoría y contar ventas
-    productos_mas_vendidos = df.groupby('product_category_name')['order_item_id'].count().reset_index()
+    productos_mas_vendidos = df_filtrado.groupby('product_category_name')['order_item_id'].count().reset_index()
     productos_mas_vendidos.columns = ['Categoría', 'Unidades Vendidas']
     productos_mas_vendidos = productos_mas_vendidos.sort_values(by='Unidades Vendidas', ascending=False)
 
@@ -206,3 +207,48 @@ elif seccion == "Top Categorías Vendidas":
     ax_cat.set_xlabel("Unidades Vendidas")
     ax_cat.set_ylabel("Categoría")
     st.pyplot(fig_cat)
+
+elif seccion == "Reviews":
+    st.subheader(" Reviews")
+
+    # Contar valores faltantes en 'review_comment_message'
+    valores_nulos_reviws = df_filtrado['review_comment_message'].isna().sum()
+    # Eliminar duplicados en 'review_comment_message', manteniendo el primero
+    df_reviws = df_filtrado.drop_duplicates(subset=['review_comment_message'], keep='first').reset_index(drop=True)
+    
+
+    entregados2 = df_reviws[df_reviws['order_delivered_customer_date'].notna()].copy()
+
+    # Calcular días de retraso
+    entregados2['dias_retraso'] = (entregados2['order_delivered_customer_date'] - entregados2['order_estimated_delivery_date']).dt.days
+    entregados2['llegó_tarde'] = entregados2['dias_retraso'] > 0
+    # Solo reviews completas y entregadas a tiempo
+    df_reviews_validas = entregados2[(entregados2['order_delivered_customer_date'].notna()) &(entregados2['dias_retraso'] <= 0) &  (entregados2['customer_state'].notna())]
+    # Agrupamos por estado
+    reviews_por_estado = df_reviews_validas.groupby('customer_state').agg(n_reviews=('review_id', 'count'),score_medio=('review_score', 'mean')).sort_values(by='n_reviews', ascending=False)
+
+
+    fig, ax1 = plt.subplots(figsize=(14, 6))
+
+    #número de reviews
+    color1 = 'skyblue'
+    ax1.bar(reviews_por_estado.index, reviews_por_estado['n_reviews'], color=color1, label='Número de reviews')
+    ax1.set_ylabel('Número de reviews', color=color1)
+    ax1.tick_params(axis='y', labelcolor=color1)
+
+    # score medio
+    ax2 = ax1.twinx()
+    color2 = 'seagreen'
+    ax2.plot(reviews_por_estado.index, reviews_por_estado['score_medio'], color=color2, marker='o', label='Score medio')
+    ax2.set_ylabel('Score medio', color=color2)
+    ax2.tick_params(axis='y', labelcolor=color2)
+    ax2.set_ylim(3.5, 5)
+
+    # general
+    plt.title('Número de Reviews y Score Medio por Estado (Sin pedidos entregados tarde)')
+    ax1.set_xticklabels(reviews_por_estado.index, rotation=45)
+    fig.tight_layout()
+    fig.legend(loc="upper right", bbox_to_anchor=(1,1), bbox_transform=ax1.transAxes)
+    st.pyplot(fig)
+    st.subheader("📋 Tabla Reviews y Score medio")
+    st.dataframe(reviews_por_estado)
