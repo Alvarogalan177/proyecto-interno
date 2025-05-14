@@ -8,14 +8,14 @@ import matplotlib.cm as cm
 
 
 # Cargar datos
-df_items = pd.read_csv(r".\proyecto\proyecto-interno\Olist_Data\olist_order_items_dataset.csv")
-df_reviews = pd.read_csv(r".\proyecto\proyecto-interno\Olist_Data\olist_order_reviews_dataset.csv")
-df_orders = pd.read_csv(r".\proyecto\proyecto-interno\Olist_Data\olist_orders_dataset.csv")
-df_products = pd.read_csv(r".\proyecto\proyecto-interno\Olist_Data\olist_products_dataset.csv")
-df_sellers = pd.read_csv(r".\proyecto\proyecto-interno\Olist_Data\olist_sellers_dataset.csv")
-df_payments = pd.read_csv(r".\proyecto\proyecto-interno\Olist_Data\olist_order_payments_dataset.csv")
-df_customers = pd.read_csv(r".\proyecto\proyecto-interno\Olist_Data\olist_customers_dataset.csv")
-df_category = pd.read_csv(r".\proyecto\proyecto-interno\Olist_Data\product_category_name_translation.csv")
+df_items = pd.read_csv("./Olist_Data/olist_order_items_dataset.csv")
+df_reviews = pd.read_csv("./Olist_Data/olist_order_reviews_dataset.csv")
+df_orders = pd.read_csv("./Olist_Data/olist_orders_dataset.csv")
+df_products = pd.read_csv("./Olist_Data/olist_products_dataset.csv")
+df_sellers = pd.read_csv("./Olist_Data/olist_sellers_dataset.csv")
+df_payments = pd.read_csv("./Olist_Data/olist_order_payments_dataset.csv")
+df_customers = pd.read_csv("./Olist_Data/olist_customers_dataset.csv")
+df_category = pd.read_csv("./Olist_Data/product_category_name_translation.csv")
 estado_nombres = {
     'AC': 'Acre', 'AL': 'Alagoas', 'AM': 'Amazonas', 'AP': 'Amapá', 'BA': 'Bahia', 'CE': 'Ceará',
     'DF': 'Distrito Federal', 'ES': 'Espírito Santo', 'GO': 'Goiás', 'MA': 'Maranhão', 'MG': 'Minas Gerais',
