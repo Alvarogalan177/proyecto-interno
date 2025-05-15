@@ -255,29 +255,31 @@ elif seccion == "Reviews":
     st.dataframe(reviews_por_estado)
 
 elif seccion == "Productos Más Vendidos":
-    st.subheader(" Productos")
+    st.subheader("📋 Tabla de Productos Más Vendidos")
+    
     productos_mas_vendidos = df_filtrado.groupby('product_category_name')['order_item_id'].count().reset_index()
     productos_mas_vendidos.columns = ['Categoría', 'Unidades Vendidas']
     productos_mas_vendidos = productos_mas_vendidos.sort_values(by='Unidades Vendidas', ascending=False)
 
     ingresos = df_filtrado.groupby('product_category_name')['price'].sum().reset_index()
     ingresos.columns = ['Categoría', 'Ingresos Totales']
-    productos_mas_vendidos = productos_mas_vendidos.merge(ingresos, on='Categoría')
+    productos_mas_vendidos = productos_mas_vendidos.merge(ingresos, on='Categoría', how='left')
 
     precio_prom = df_filtrado.groupby('product_category_name')['price'].mean().reset_index()
     precio_prom.columns = ['Categoría', 'Precio Promedio']
-    productos_mas_vendidos = productos_mas_vendidos.merge(precio_prom, on='Categoría')
+    productos_mas_vendidos = productos_mas_vendidos.merge(precio_prom, on='Categoría', how='left')
 
     vendedores = df_filtrado.groupby('product_category_name')['seller_id'].nunique().reset_index()
     vendedores.columns = ['Categoría', 'N° Vendedores Únicos']
-    productos_mas_vendidos = productos_mas_vendidos.merge(vendedores, on='Categoría')
+    productos_mas_vendidos = productos_mas_vendidos.merge(vendedores, on='Categoría', how='left')
 
-    ticket_prom = df_filtrado.groupby('product_category_name').apply(lambda x: x['price'].sum() / x['order_id'].nunique()).reset_index(name='Ticket Promedio')
+    ticket_prom = df_filtrado.groupby('product_category_name').apply(
+        lambda x: x['price'].sum() / x['order_id'].nunique()
+    ).reset_index(name='Ticket Promedio')
     ticket_prom.rename(columns={'product_category_name': 'Categoría'}, inplace=True)
-    productos_mas_vendidos = productos_mas_vendidos.merge(ticket_prom, on='Categoría')
-    st.subheader("📋 Tabla Reviews y Score medio")
-    st.dataframe(productos_mas_vendidos)
+    productos_mas_vendidos = productos_mas_vendidos.merge(ticket_prom, on='Categoría', how='left')
 
+    st.dataframe(productos_mas_vendidos.head(20))
 
     st.subheader("📊 Gráfico de Categorías Más Vendidas")
     fig_cat, ax_cat = plt.subplots(figsize=(12, 8))
@@ -294,5 +296,5 @@ elif seccion == "Productos Más Vendidos":
     ax_cat.set_ylabel("Categoría")
     plt.tight_layout()
     st.pyplot(fig_cat)
-   
+
     
