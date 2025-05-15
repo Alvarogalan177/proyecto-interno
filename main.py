@@ -43,7 +43,8 @@ seccion = st.sidebar.radio("Selecciona una sección", [
     "Top Ciudades",
     "Retrasos en Entregas",
     "Top Categorías Vendidas",
-    "Reviews"
+    "Reviews",
+    "Productos Más Vendidos"
 ])
 
 min_fecha = df['order_purchase_timestamp'].min().date()
@@ -182,7 +183,7 @@ elif seccion == "Top Categorías Vendidas":
     productos_mas_vendidos.columns = ['Categoría', 'Unidades Vendidas']
     productos_mas_vendidos = productos_mas_vendidos.sort_values(by='Unidades Vendidas', ascending=False)
 
-    # Opcional: traducir categorías si tienes df_category
+    
     if not df_category.empty:
         productos_mas_vendidos = productos_mas_vendidos.merge(
             df_category.rename(columns={'product_category_name': 'Categoría', 'product_category_name_english': 'Categoría_Traducida'}),
@@ -252,3 +253,46 @@ elif seccion == "Reviews":
     st.pyplot(fig)
     st.subheader("📋 Tabla Reviews y Score medio")
     st.dataframe(reviews_por_estado)
+
+elif seccion == "Productos Más Vendidos":
+    st.subheader(" Productos")
+    productos_mas_vendidos = df_filtrado.groupby('product_category_name')['order_item_id'].count().reset_index()
+    productos_mas_vendidos.columns = ['Categoría', 'Unidades Vendidas']
+    productos_mas_vendidos = productos_mas_vendidos.sort_values(by='Unidades Vendidas', ascending=False)
+
+    ingresos = df_filtrado.groupby('product_category_name')['price'].sum().reset_index()
+    ingresos.columns = ['Categoría', 'Ingresos Totales']
+    productos_mas_vendidos = productos_mas_vendidos.merge(ingresos, on='Categoría')
+
+    precio_prom = df_filtrado.groupby('product_category_name')['price'].mean().reset_index()
+    precio_prom.columns = ['Categoría', 'Precio Promedio']
+    productos_mas_vendidos = productos_mas_vendidos.merge(precio_prom, on='Categoría')
+
+    vendedores = df_filtrado.groupby('product_category_name')['seller_id'].nunique().reset_index()
+    vendedores.columns = ['Categoría', 'N° Vendedores Únicos']
+    productos_mas_vendidos = productos_mas_vendidos.merge(vendedores, on='Categoría')
+
+    ticket_prom = df_filtrado.groupby('product_category_name').apply(lambda x: x['price'].sum() / x['order_id'].nunique()).reset_index(name='Ticket Promedio')
+    ticket_prom.rename(columns={'product_category_name': 'Categoría'}, inplace=True)
+    productos_mas_vendidos = productos_mas_vendidos.merge(ticket_prom, on='Categoría')
+    st.subheader("📋 Tabla Reviews y Score medio")
+    st.dataframe(productos_mas_vendidos)
+
+
+    st.subheader("📊 Gráfico de Categorías Más Vendidas")
+    fig_cat, ax_cat = plt.subplots(figsize=(12, 8))
+    top_n = 15
+    sns.barplot(
+        data=productos_mas_vendidos.head(top_n),
+        y='Categoría',
+        x='Unidades Vendidas',
+        palette='viridis',
+        ax=ax_cat
+    )
+    ax_cat.set_title(f"Top {top_n} Categorías con Más Unidades Vendidas")
+    ax_cat.set_xlabel("Unidades Vendidas")
+    ax_cat.set_ylabel("Categoría")
+    plt.tight_layout()
+    st.pyplot(fig_cat)
+   
+    
