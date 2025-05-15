@@ -42,7 +42,6 @@ seccion = st.sidebar.radio("Selecciona una sección", [
     "Resumen General",
     "Top Ciudades",
     "Retrasos en Entregas",
-    "Top Categorías Vendidas",
     "Reviews",
     "Productos Más Vendidos"
 ])
@@ -175,39 +174,6 @@ elif seccion == "Retrasos en Entregas":
     st.subheader("📈 Gráfico de Retrasos")
     st.pyplot(fig_retrasos)
 
-elif seccion == "Top Categorías Vendidas":
-    st.subheader("📦 Top de Categorías de Producto Más Vendidas")
-
-    # Agrupar por categoría y contar ventas
-    productos_mas_vendidos = df_filtrado.groupby('product_category_name')['order_item_id'].count().reset_index()
-    productos_mas_vendidos.columns = ['Categoría', 'Unidades Vendidas']
-    productos_mas_vendidos = productos_mas_vendidos.sort_values(by='Unidades Vendidas', ascending=False)
-
-    
-    if not df_category.empty:
-        productos_mas_vendidos = productos_mas_vendidos.merge(
-            df_category.rename(columns={'product_category_name': 'Categoría', 'product_category_name_english': 'Categoría_Traducida'}),
-            on='Categoría', how='left'
-        )
-        productos_mas_vendidos['Categoría'] = productos_mas_vendidos['Categoría_Traducida'].fillna(productos_mas_vendidos['Categoría'])
-
-    st.dataframe(productos_mas_vendidos.head(20))
-
-    # Gráfico
-    st.subheader("📊 Gráfico de Categorías Más Vendidas")
-    fig_cat, ax_cat = plt.subplots(figsize=(12, 8))
-    top_n = 15
-    sns.barplot(
-        data=productos_mas_vendidos.head(top_n),
-        y='Categoría',
-        x='Unidades Vendidas',
-        palette='viridis',
-        ax=ax_cat
-    )
-    ax_cat.set_title(f"Top {top_n} Categorías con Más Unidades Vendidas")
-    ax_cat.set_xlabel("Unidades Vendidas")
-    ax_cat.set_ylabel("Categoría")
-    st.pyplot(fig_cat)
 
 elif seccion == "Reviews":
     st.subheader(" Reviews")
